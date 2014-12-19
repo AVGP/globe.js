@@ -1,6 +1,6 @@
 {
   "name": "globe.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WebGL based globe for visualisation",
   "main": "main.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "dependencies": {
     "hammerjs": "^2.0.4",
     "three": "^0.69.0",
-    "three-world": "^1.0.6"
+    "three-world": "^1.1.0"
   },
   "devDependencies": {
     "browserify": "^7.0.1",
