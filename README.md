@@ -1,6 +1,8 @@
 # globe.js
 ## Simple way to visualise things on a 3D globe
 
+See a [live demo here](http://avgp.github.io/globe.js/).
+
 ## Usage
 
 ### Get it from NPM
