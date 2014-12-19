@@ -3,12 +3,18 @@
 
 ## Usage
 
+### Get it from NPM
+
+```shell
+npm install globejs
+```
+
 ### Using with Browserify or without it
 
 This package can be used with browserify like this:
 
 ```javascript
-var Globe = require('globe');
+var Globe = require('globejs');
 
 Globe.init("world.jpg", 0.005);
 ```
@@ -97,7 +103,7 @@ window.Globe.remove(marker);
 Like this:
 
 ```shell
-git clone https://github.com/avgp/globe.git
+git clone https://github.com/avgp/globe.js.git
 cd globe
 npm install
 npm run dev
