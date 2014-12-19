@@ -1,5 +1,5 @@
 {
-  "name": "globe3d",
+  "name": "globe.js",
   "version": "1.0.0",
   "description": "WebGL based globe for visualisation",
   "main": "main.js",

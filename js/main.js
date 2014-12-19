@@ -106,7 +106,8 @@ module.exports = (function() {
   }
 
   // For non-browserify
-  if(window.compat) {
+  console.log(document, document.currentScript, document.currentScript.dataset);
+  if(window.compat || (document.currentScript && document.currentScript.dataset && document.currentScript.dataset.compat)) {
     console.log("Compat mode");
     window.Globe = instance;
   }
