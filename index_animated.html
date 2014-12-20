@@ -19,7 +19,7 @@
   </noscript>
   <script data-compat="true" src="globe.js"></script>
   <script>
-    window.Globe.init("world.png", 0.005, { transparent: true, animated: true });
+    window.Globe.init("world.png", 0.005, { transparent: true, animation: {speed: 50, offset: 600} });
 
     var markers = [
       [47.367347,  8.550002, 250, 0x0000ff], // Zurich
@@ -46,7 +46,6 @@
     for(var i=0; i<markers.length; i++) {
       setTimeout((function(i) {
         return function() {
-          console.log("lolwhut", i);
           window.Globe.add.apply({}, markers[i]);
         };
       })(i), i * 2000);

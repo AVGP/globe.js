@@ -60,7 +60,7 @@ module.exports = (function() {
 
     speed = rotationSpeed;
     onRender = options.onRender;
-    animation = !!options.animation;
+    animation = options.animation;
 
     World.init({
       clearColor: (options.bgColor === undefined ? 0xffffff : options.bgColor),
@@ -110,7 +110,7 @@ module.exports = (function() {
     var newMarker = new THREE.Mesh(marker, new THREE.MeshBasicMaterial({color: markerColor}));
     newMarker.scale.set(1, 1, height);
 
-    var pos = latLongToVector3(lat, lng, 600, animation ? animation.offset + height / 2 : height / 2);
+    var pos = latLongToVector3(lat, lng, 600, (animation ? animation.offset + height / 2 : height / 2));
     newMarker.position.set(pos.x, pos.y, pos.z);
     newMarker.lookAt(origin);
     if(animation) {
