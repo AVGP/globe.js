@@ -19,8 +19,8 @@
   </noscript>
   <script data-compat="true" src="globe.js"></script>
   <script>
+    window.Globe.init("world.png", 0.005, { transparent: true });
     var markers = [
-      window.Globe.init("world.png", 0.005, { transparent: true }),
       window.Globe.add(47.367347,  8.550002, 250, 0x0000ff), // Zurich
       window.Globe.add(38.716666, -9.133333, 250, 0xff0000), // Lisbon
       window.Globe.add(51.507351, -0.127758, 250, 0xff0000), // London

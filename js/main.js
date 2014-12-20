@@ -3,7 +3,7 @@ var THREE    = require('three'),
     Controls = require('./kinetic-controls');
 
 module.exports = (function() {
-  var instance = {}, onRender, speed = 0.005, earth;
+  var instance = {}, onRender, speed = 0.005, earth, animation = false;
 
   // Internals
 
@@ -15,6 +15,8 @@ module.exports = (function() {
       origin = new THREE.Vector3(0, 0, 0),
       anchor = new THREE.Object3D();
 
+  var markers = [];
+
   light2.position.set(600, 0, 0);
   light2.target.position.set(0,0,0);
   light3.position.set(-600, 0, 0);
@@ -22,6 +24,20 @@ module.exports = (function() {
 
   function update() {
     Controls.update();
+
+    if(animation) {
+      for(var i=0; i<markers.length;i++) {
+        if(markers[i].offset < 0) continue;
+        if(markers[i].offset === 0) {
+          markers[i].offset = -1;
+          continue;
+        }
+
+        markers[i].translateZ(animation.speed);
+        markers[i].offset -= animation.speed;
+      }
+    }
+
     if(!Controls.wasMoved()) earth.rotation.y += speed;
     if(onRender) onRender();
   }
@@ -44,6 +60,7 @@ module.exports = (function() {
 
     speed = rotationSpeed;
     onRender = options.onRender;
+    animation = !!options.animation;
 
     World.init({
       clearColor: (options.bgColor === undefined ? 0xffffff : options.bgColor),
@@ -93,10 +110,16 @@ module.exports = (function() {
     var newMarker = new THREE.Mesh(marker, new THREE.MeshBasicMaterial({color: markerColor}));
     newMarker.scale.set(1, 1, height);
 
-    var pos = latLongToVector3(lat, lng, 600, height / 2);
+    var pos = latLongToVector3(lat, lng, 600, animation ? animation.offset + height / 2 : height / 2);
     newMarker.position.set(pos.x, pos.y, pos.z);
     newMarker.lookAt(origin);
+    if(animation) {
+      newMarker.offset = animation.offset;
+      newMarker.height = height;
+    }
+
     earth.add(newMarker);
+    markers.push(newMarker);
 
     return newMarker;
   }

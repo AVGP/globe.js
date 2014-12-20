@@ -94,6 +94,11 @@ Markers can also be removed later on:
 window.Globe.remove(marker);
 ```
 
+## "Fly in" animation for markers
+
+Using the `animation` option, you can let the new markers "fly in".
+[Check out the live demo here](index_animated.html).
+
 ## Hack it / Contribute
 
 ### Hacking

@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <style>
+    html, body {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+
+      height: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <noscript>
+    <h1>Please activate Javascript.</h1>
+  </noscript>
+  <script data-compat="true" src="globe.js"></script>
+  <script>
+    window.Globe.init("world.png", 0.005, { transparent: true, animated: true });
+
+    var markers = [
+      [47.367347,  8.550002, 250, 0x0000ff], // Zurich
+      [38.716666, -9.133333, 250, 0xff0000], // Lisbon
+      [51.507351, -0.127758, 250, 0xff0000], // London
+      [40.416775, -3.703790, 250, 0xff0000], // Madrid
+      [41.385064,  2.173403, 250, 0xff0000], // Barcelona
+      [45.554962, 18.695514, 250, 0xff0000], // Osijek
+      [44.426767, 26.102538, 250, 0xff0000], // Bucharest
+      [53.551085,  9.993682, 250, 0xff0000], // Hamburg
+      [50.984768, 11.029880, 250, 0xff0000], // Erfurt
+      [50.937531,  6.960279, 250, 0xff0000], // Cologne
+      [52.370216,  4.895168, 250, 0xff0000], // Amsterdam
+      [52.520007, 13.404954, 250, 0xff0000], // Berlin
+      [52.390569, 13.064473, 250, 0xff0000], // Potsdam
+      [52.375892,  9.732010, 250, 0xff0000], // Hannover
+      [47.567442,  7.597551, 250, 0xff0000], // Basel
+
+      [52.375892,  27.566667, 250, 0x00ff00], // Minsk
+      [45.501689, -73.567256, 250, 0x00ff00] // Montreal
+
+    ];
+
+    for(var i=0; i<markers.length; i++) {
+      setTimeout((function(i) {
+        return function() {
+          console.log("lolwhut", i);
+          window.Globe.add.apply({}, markers[i]);
+        };
+      })(i), i * 2000);
+    }
+  </script>
+</body>
+</html>
