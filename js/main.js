@@ -3,7 +3,8 @@ var THREE    = require('three'),
     Controls = require('./kinetic-controls');
 
 module.exports = (function() {
-  var instance = {}, onRender, speed = 0.005, earth, animation = false;
+  var instance = {}, speed = 0.005, animation = false,
+      earth, onRender, container;
 
   // Internals
 
@@ -126,6 +127,10 @@ module.exports = (function() {
 
   instance.remove = function(marker) {
     earth.remove(marker);
+  }
+
+  instance.resize = function() {
+    World.recalculateSize();
   }
 
   // For non-browserify
