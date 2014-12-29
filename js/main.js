@@ -3,25 +3,27 @@ var THREE    = require('three'),
     Controls = require('./kinetic-controls');
 
 module.exports = (function() {
-  var instance = {}, speed = 0.005, animation = false,
+  var instance = {}, speed = 0.005, animation = false, clustering = false,
       earth, onRender, container;
 
   // Internals
 
-  var earthGeo = new THREE.SphereGeometry(600, 64, 64),
-      light  = new THREE.DirectionalLight(0x888888, 3.5, 500 ),
-      light2 = new THREE.DirectionalLight(0x888888, 3.5, 500 ),
-      light3 = new THREE.DirectionalLight(0x888888, 3.5, 500 ),
-      marker = new THREE.BoxGeometry(5, 5, 1),
+  var earthGeo = new THREE.BufferGeometry(),
+      marker = new THREE.BufferGeometry(),
       origin = new THREE.Vector3(0, 0, 0),
       anchor = new THREE.Object3D();
 
-  var markers = [];
+  var markers = [], markerMaterials = {};
 
-  light2.position.set(600, 0, 0);
-  light2.target.position.set(0,0,0);
-  light3.position.set(-600, 0, 0);
-  light3.target.position.set(0,0,0);
+  // Fill the marker geometry with a box geometry
+  var tmpGeo = new THREE.BoxGeometry(5, 5, 1);
+  marker.fromGeometry(tmpGeo);
+  tmpGeo.dispose();
+  
+  // Fill the earth geometry with a sphere geometry
+  tmpGeo = new THREE.SphereGeometry(600, 64, 64);
+  earthGeo.fromGeometry(tmpGeo);
+  tmpGeo.dispose();
 
   function update() {
     Controls.update();
@@ -53,6 +55,14 @@ module.exports = (function() {
 
     return new THREE.Vector3(x,y,z);
   }
+  
+  function createClusters(clusterLat, clusterLng) {
+    for(var lat=-180; lat<180; lat+=clusterLat) {
+      for(var lng=-90; lng<90; lng+=clusterLng) {
+        instance.add(lat, lng, 0, 0x00ff00);
+      }
+    }
+  }
 
   // Public API
 
@@ -67,7 +77,7 @@ module.exports = (function() {
       clearColor: (options.bgColor === undefined ? 0xffffff : options.bgColor),
       camDistance: 2500,
       farPlane: 6000,
-      ambientLight: 0x111111,
+      ambientLight: options.ambientLight === undefined ? 0x111111 : options.ambientLight,
       renderCallback: update,
       container: options.container
     });
@@ -103,12 +113,36 @@ module.exports = (function() {
       earth.add(earthInner);
     }
 
+    if(options.clustered) {
+      createClusters(1,1);
+      clustering = true;
+    }
+
     World.add(earth);
     World.startRenderLoop();
   }
 
   instance.add = function(lat, lng, height, markerColor) {
-    var newMarker = new THREE.Mesh(marker, new THREE.MeshBasicMaterial({color: markerColor}));
+    if(clustering && height > 0) {
+      // Round to fit clustering
+      lat = Math.round(lat);
+      lng = Math.round(lng);
+      
+      // Identify marker in cluster at desired location...
+      var currentMarker = markers[((lat + 180) * 180) + lng + 90];
+      if(currentMarker.scale.z === 0) earth.add(currentMarker); // add marker if it has been inactive so far
+      currentMarker.scale.set(1, 1, height); // scale
+      currentMarker.translateZ(height/-2); // move upwards, so it still sits on top of the globe
+      
+      return;
+    }
+    if(markerMaterials[markerColor]) {
+      var material = markerMaterials[markerColor];
+    } else {
+      var material = new THREE.MeshBasicMaterial({color: markerColor});
+      markerMaterials[markerColor] = material;
+    }
+    var newMarker = new THREE.Mesh(marker, material);
     newMarker.scale.set(1, 1, height);
 
     var pos = latLongToVector3(lat, lng, 600, (animation ? animation.offset + height / 2 : height / 2));
@@ -119,7 +153,7 @@ module.exports = (function() {
       newMarker.height = height;
     }
 
-    earth.add(newMarker);
+    if(height > 0) earth.add(newMarker);
     markers.push(newMarker);
 
     return newMarker;
