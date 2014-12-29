@@ -99,6 +99,17 @@ window.Globe.remove(marker);
 Using the `animation` option, you can let the new markers "fly in".
 [Check out the live demo here](http://avgp.github.io/globe.js/index_animated.html).
 
+## Clustering
+
+The globe also has a basic implementation of clustering to visualise a large amount of data, which would result in too many markers.  
+To be able to visualise those amounts of data, you can cluster markers along a grid, like this:
+
+```javascript
+window.Globe.init("world.jpg", 0.005, {clustering: true, clusterGridSize: 5});
+```
+All calls to `window.Globe.add()` will only add to the height of the marker that's closest to the desired position on the grid.
+See a demo [here](index_clustered.html).
+
 ## Hack it / Contribute
 
 ### Hacking

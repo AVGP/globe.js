@@ -3,8 +3,8 @@ var THREE    = require('three'),
     Controls = require('./kinetic-controls');
 
 module.exports = (function() {
-  var instance = {}, speed = 0.005, animation = false, clustering = false,
-      earth, onRender, container;
+  var instance = {}, speed = 0.005, animation = false, isClustered = false,
+      earth, onRender, container, clusterGridSize;
 
   // Internals
 
@@ -56,9 +56,9 @@ module.exports = (function() {
     return new THREE.Vector3(x,y,z);
   }
   
-  function createClusters(clusterLat, clusterLng) {
-    for(var lat=-180; lat<180; lat+=clusterLat) {
-      for(var lng=-90; lng<90; lng+=clusterLng) {
+  function createClusters(gridSize) {
+    for(var lat=-180; lat<180; lat+=gridSize) {
+      for(var lng=-90; lng<90; lng+=gridSize) {
         instance.add(lat, lng, 0, 0x00ff00);
       }
     }
@@ -114,8 +114,9 @@ module.exports = (function() {
     }
 
     if(options.clustered) {
-      createClusters(1,1);
-      clustering = true;
+      clusterGridSize = options.clusterGridSize;
+      createClusters(clusterGridSize);
+      isClustered = true;
     }
 
     World.add(earth);
@@ -123,19 +124,20 @@ module.exports = (function() {
   }
 
   instance.add = function(lat, lng, height, markerColor) {
-    if(clustering && height > 0) {
-      // Round to fit clustering
-      lat = Math.round(lat);
-      lng = Math.round(lng);
+    if(isClustered && height > 0) {
+      // Round to fit isClustered
+      lat = Math.round(lat/clusterGridSize);
+      lng = Math.round(lng/clusterGridSize);
       
       // Identify marker in cluster at desired location...
-      var currentMarker = markers[((lat + 180) * 180) + lng + 90];
+      var currentMarker = markers[((lat + (180/clusterGridSize)) * (180/clusterGridSize)) + lng + (90/clusterGridSize)];
       if(currentMarker.scale.z === 0) earth.add(currentMarker); // add marker if it has been inactive so far
-      currentMarker.scale.set(1, 1, height); // scale
+      currentMarker.scale.set(1, 1, currentMarker.scale.z + height); // scale
       currentMarker.translateZ(height/-2); // move upwards, so it still sits on top of the globe
       
       return;
     }
+    
     if(markerMaterials[markerColor]) {
       var material = markerMaterials[markerColor];
     } else {
