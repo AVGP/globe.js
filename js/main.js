@@ -19,7 +19,7 @@ module.exports = (function() {
   var tmpGeo = new THREE.BoxGeometry(5, 5, 1);
   marker.fromGeometry(tmpGeo);
   tmpGeo.dispose();
-  
+
   // Fill the earth geometry with a sphere geometry
   tmpGeo = new THREE.SphereGeometry(600, 64, 64);
   earthGeo.fromGeometry(tmpGeo);
@@ -55,7 +55,7 @@ module.exports = (function() {
 
     return new THREE.Vector3(x,y,z);
   }
-  
+
   function createClusters(gridSize) {
     for(var lat=-180; lat<180; lat+=gridSize) {
       for(var lng=-90; lng<90; lng+=gridSize) {
@@ -96,7 +96,7 @@ module.exports = (function() {
 
     earth = new THREE.Mesh(earthGeo, mat);
 
-    Controls.init(World.getCamera(), earth, 1200, false, false);
+    Controls.init(World.getCamera(), earth, 1200, options.container || window, false, false);
 
     // Artifacts with THREE.DoubleSide and transparent materials have ugly artifacts
     // so we cheat by having 2 meshes, one with FrontSide, one with BackSide
@@ -128,16 +128,16 @@ module.exports = (function() {
       // Round to fit isClustered
       lat = Math.round(lat/clusterGridSize);
       lng = Math.round(lng/clusterGridSize);
-      
+
       // Identify marker in cluster at desired location...
       var currentMarker = markers[((lat + (180/clusterGridSize)) * (180/clusterGridSize)) + lng + (90/clusterGridSize)];
       if(currentMarker.scale.z === 0) earth.add(currentMarker); // add marker if it has been inactive so far
       currentMarker.scale.set(1, 1, currentMarker.scale.z + height); // scale
       currentMarker.translateZ(height/-2); // move upwards, so it still sits on top of the globe
-      
+
       return;
     }
-    
+
     if(markerMaterials[markerColor]) {
       var material = markerMaterials[markerColor];
     } else {

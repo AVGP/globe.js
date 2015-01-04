@@ -4,7 +4,7 @@ module.exports = (function() {
   var instance = {}, hammertime, cam, camAnchor, minZ = 0;
   var swingX = 0, swingY = 0, wasMoved = false;
 
-  instance.init = function(camera, cameraAnchor, minCamZ, invertX, invertY) {
+  instance.init = function(camera, cameraAnchor, minCamZ, container, invertX, invertY) {
     var hammertime = new Hammer(document.body, {});
 
     cam = camera;
@@ -46,11 +46,11 @@ module.exports = (function() {
       if(e.preventDefault) e.preventDefault();
     });
 
-    window.addEventListener('wheel', function(e) {
+    container.addEventListener('wheel', function(e) {
       if(e.wheelDelta) { // Chrome
-        camera.translateZ(-(e.wheelDelta / 60));
+        camera.translateZ(-(e.wheelDelta / 20));
       } else { // IE / Firefox
-        camera.translateZ(-1 * Math.max(-10, Math.min(e.deltaY, 10)));
+        camera.translateZ(-1 * Math.max(-20, Math.min(e.deltaY, 20)));
       }
       wasMoved = true;
 
