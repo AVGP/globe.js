@@ -96,7 +96,7 @@ module.exports = (function() {
 
     earth = new THREE.Mesh(earthGeo, mat);
 
-    Controls.init(World.getCamera(), earth, 1200, options.container || window, false, false);
+    Controls.init(World.getCamera(), earth, 1200, options.container, false, false);
 
     // Artifacts with THREE.DoubleSide and transparent materials have ugly artifacts
     // so we cheat by having 2 meshes, one with FrontSide, one with BackSide

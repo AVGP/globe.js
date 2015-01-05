@@ -1,6 +1,6 @@
 {
   "name": "globe.js",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "WebGL based globe for visualisation",
   "main": "main.js",
   "scripts": {
