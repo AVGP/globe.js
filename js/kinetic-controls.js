@@ -5,7 +5,10 @@ module.exports = (function() {
   var swingX = 0, swingY = 0, wasMoved = false;
 
   instance.init = function(camera, cameraAnchor, minCamZ, container, invertX, invertY) {
-    var hammertime = new Hammer(container || document.body, {});
+    if(!container) container = document.body;
+
+    var hammertime = new Hammer(container, {});
+
 
     cam = camera;
     camAnchor = cameraAnchor;
