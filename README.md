@@ -40,9 +40,9 @@ In the simplest case, you can get things on the globe like this:
 <body>
   <script src="globe.js" data-compat="true"></script>
   <script>
-    var latitude = 47.367347, longitude = 8.550002, height = 200, color = 0x0000ff;
+    var latitude = 47.367347, longitude = 8.550002, color = 0x0000ff;
     window.Globe.init("world.jpg", 0.005);
-    window.Globe.add(latitude, longitude, height, color); // blue marker on Zurich
+    window.Globe.add(latitude, longitude, 0, color); // blue marker on Zurich
   </script>
 </body>
 </html>
@@ -65,6 +65,7 @@ We will also specify a callback that is called when a frame is rendered, that ju
 
     window.Globe.init("world.png", 0.005, {
       bg: 0xff0000,
+      animation: true,
       transparent: true,
       onRender: function() { console.log("Rendered."); },
       container: document.getElementById("worldcontainer")
@@ -76,7 +77,7 @@ We will also specify a callback that is called when a frame is rendered, that ju
 </html>
 ```
 
-### Adding and removing markers
+### Adding markers
 
 Markers can be added like this:
 
@@ -88,27 +89,10 @@ Where:
 * height is the height of the marker sticking out of the globe. For comparison: The globe has a radius of 600 canvas pixels...
 * color is a hex number representing the RGB color, e.g. `0xff0000` for red, `0x00ff00` for green, etc.
 
-Markers can also be removed later on:
-
-```javascript
-window.Globe.remove(marker);
-```
-
 ## "Fly in" animation for markers
 
 Using the `animation` option, you can let the new markers "fly in".
 [Check out the live demo here](http://avgp.github.io/globe.js/index_animated.html).
-
-## Clustering
-
-The globe also has a basic implementation of clustering to visualise a large amount of data, which would result in too many markers.  
-To be able to visualise those amounts of data, you can cluster markers along a grid, like this:
-
-```javascript
-window.Globe.init("world.jpg", 0.005, {clustering: true, clusterGridSize: 5});
-```
-All calls to `window.Globe.add()` will only add to the height of the marker that's closest to the desired position on the grid.
-See a demo [here](index_clustered.html).
 
 ## Hack it / Contribute
 

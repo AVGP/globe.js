@@ -3,22 +3,21 @@ var THREE    = require('three'),
     Controls = require('./kinetic-controls');
 
 module.exports = (function() {
-  var instance = {}, speed = 0.005, animation = false, isClustered = false,
-      earth, onRender, container, clusterGridSize;
+  var instance = {}, speed = 0.005, animation = false,
+      earth, onRender, container, maxPoints = 150000;
 
   // Internals
 
-  var earthGeo = new THREE.BufferGeometry(),
-      marker = new THREE.BufferGeometry(),
-      origin = new THREE.Vector3(0, 0, 0),
-      anchor = new THREE.Object3D();
+  var earthGeo   = new THREE.BufferGeometry(),
+      markersGeo = new THREE.BufferGeometry(),
+      origin     = new THREE.Vector3(0, 0, 0),
+      anchor     = new THREE.Object3D();
 
-  var markers = [], markerMaterials = {};
+  var markersVertices = null,
+      markersDestinations = null,
+      markersColours  = null;
 
-  // Fill the marker geometry with a box geometry
-  var tmpGeo = new THREE.BoxGeometry(5, 5, 1);
-  marker.fromGeometry(tmpGeo);
-  tmpGeo.dispose();
+  var markerCount = 0;
 
   // Fill the earth geometry with a sphere geometry
   tmpGeo = new THREE.SphereGeometry(600, 64, 64);
@@ -29,15 +28,16 @@ module.exports = (function() {
     Controls.update();
 
     if(animation) {
-      for(var i=0; i<markers.length;i++) {
-        if(markers[i].offset < 0) continue;
-        if(markers[i].offset === 0) {
-          markers[i].offset = -1;
-          continue;
-        }
+      for(var i=0; i<markerCount; i++) {
+        var distX = markersGeo.attributes.position.array[i * 3]     - markersGeo.attributes.destination.array[i * 3],
+            distY = markersGeo.attributes.position.array[i * 3 + 1] - markersGeo.attributes.destination.array[i * 3 + 1],
+            distZ = markersGeo.attributes.position.array[i * 3 + 2] - markersGeo.attributes.destination.array[i * 3 + 2];
 
-        markers[i].translateZ(animation.speed);
-        markers[i].offset -= animation.speed;
+        if(Math.abs(distX) > 10) markersGeo.attributes.position.array[i * 3]     -= distX / Math.abs(distX) * 10;
+        if(Math.abs(distY) > 10) markersGeo.attributes.position.array[i * 3 + 1] -= distY / Math.abs(distY) * 10;
+        if(Math.abs(distZ) > 10) markersGeo.attributes.position.array[i * 3 + 2] -= distZ / Math.abs(distZ) * 10;
+
+        if(Math.abs(distX) > 10 || Math.abs(distY) > 10 || Math.abs(distZ) > 10) markersGeo.attributes.position.needsUpdate = true;
       }
     }
 
@@ -56,14 +56,6 @@ module.exports = (function() {
     return new THREE.Vector3(x,y,z);
   }
 
-  function createClusters(gridSize) {
-    for(var lat=-180; lat<180; lat+=gridSize) {
-      for(var lng=-90; lng<90; lng+=gridSize) {
-        instance.add(lat, lng, 0, 0x00ff00);
-      }
-    }
-  }
-
   // Public API
 
   instance.init = function(mapImg, rotationSpeed, options) {
@@ -72,6 +64,7 @@ module.exports = (function() {
     speed = rotationSpeed;
     onRender = options.onRender;
     animation = options.animation;
+    if(options.maxPoints) maxPoints = options.maxPoints;
 
     World.init({
       clearColor: (options.bgColor === undefined ? 0xffffff : options.bgColor),
@@ -113,61 +106,52 @@ module.exports = (function() {
       earth.add(earthInner);
     }
 
-    if(options.clustered) {
-      clusterGridSize = options.clusterGridSize;
-      createClusters(clusterGridSize);
-      isClustered = true;
-    }
+    markersVertices     = new Float32Array(maxPoints * 3);
+    markersColours      = new Float32Array(maxPoints * 3);
+    markersDestinations = new Float32Array(maxPoints * 3);
 
+
+    markersGeo.dynamic = true;
+    markersGeo.addAttribute('position', new THREE.BufferAttribute(markersVertices, 3));
+    markersGeo.addAttribute('destination', new THREE.BufferAttribute(markersDestinations, 3));
+    markersGeo.addAttribute('color', new THREE.BufferAttribute(markersColours, 3));
+
+    var markers = new THREE.Points(markersGeo, new THREE.PointsMaterial({side: THREE.DoubleSide, size: options.particleSize || 20, vertexColors: THREE.VertexColors}));
+    earth.add(markers);
     World.add(earth);
-    World.startRenderLoop();
+    World.start();
   }
 
   instance.add = function(lat, lng, height, markerColor) {
-    if(isClustered && height > 0) {
-      // Round to fit isClustered
-      lat = Math.round(lat/clusterGridSize);
-      lng = Math.round(lng/clusterGridSize);
 
-      // Identify marker in cluster at desired location...
-      var currentMarker = markers[((lat + (180/clusterGridSize)) * (180/clusterGridSize)) + lng + (90/clusterGridSize)];
-      if(currentMarker.scale.z === 0) earth.add(currentMarker); // add marker if it has been inactive so far
-      currentMarker.scale.set(1, 1, currentMarker.scale.z + height); // scale
-      currentMarker.translateZ(height/-2); // move upwards, so it still sits on top of the globe
+    var pos  = latLongToVector3(lat, lng, 600, height),
+        dest = latLongToVector3(lat, lng, 600,   0);
 
-      return;
-    }
+    markersVertices[markerCount * 3    ] = pos.x;
+    markersVertices[markerCount * 3 + 1] = pos.y;
+    markersVertices[markerCount * 3 + 2] = pos.z;
 
-    if(markerMaterials[markerColor]) {
-      var material = markerMaterials[markerColor];
-    } else {
-      var material = new THREE.MeshBasicMaterial({color: markerColor});
-      markerMaterials[markerColor] = material;
-    }
-    var newMarker = new THREE.Mesh(marker, material);
-    newMarker.scale.set(1, 1, height);
+    markersDestinations[markerCount * 3    ] = dest.x;
+    markersDestinations[markerCount * 3 + 1] = dest.y;
+    markersDestinations[markerCount * 3 + 2] = dest.z;
 
-    var pos = latLongToVector3(lat, lng, 600, (animation ? animation.offset + height / 2 : height / 2));
-    newMarker.position.set(pos.x, pos.y, pos.z);
-    newMarker.lookAt(origin);
-    if(animation) {
-      newMarker.offset = animation.offset;
-      newMarker.height = height;
-    }
+    markersColours[markerCount * 3    ] = ((markerColor >> 16) & 0xff) / 255.0;
+    markersColours[markerCount * 3 + 1] = ((markerColor >> 8)  & 0xff) / 255.0;
+    markersColours[markerCount * 3 + 2] = (markerColor & 0xff) / 255.0;
 
-    if(height > 0) earth.add(newMarker);
-    markers.push(newMarker);
+    markersGeo.attributes.position.needsUpdate = true;
+    markersGeo.attributes.color.needsUpdate = true;
 
-    return newMarker;
-  }
+    markerCount = (markerCount + 1) % maxPoints;
+  };
 
   instance.remove = function(marker) {
     earth.remove(marker);
-  }
+  };
 
   instance.resize = function() {
     World.recalculateSize();
-  }
+  };
 
   // For non-browserify
   if(window.compat || (document.currentScript && document.currentScript.dataset && document.currentScript.dataset.compat)) {
